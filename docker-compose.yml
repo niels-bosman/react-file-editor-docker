@@ -1,0 +1,47 @@
+version: "3.4"
+
+services:
+  postgres:
+    image: postgres:alpine
+    logging:
+      driver: "none"
+    environment:
+      POSTGRES_DB: ${DB_NAME:-react-editor}
+      POSTGRES_USER: ${DB_USER:-user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  back-end:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      DB_CONNECTION: postgres://user:password@postgres:5432/react-editor
+      APP_CDN_BASE: xxx
+      AWS_ACCESS_KEY_ID: xxx
+      AWS_BUCKET: xxx
+      AWS_EMAIL_SENDER: xxx
+      AWS_REGION: xxx
+      AWS_SECRET_ACCESS_KEY: xxx
+      JWT_SECRET: xxx
+    depends_on:
+      - postgres
+    ports:
+      - "8080:80"
+
+  front-end:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    environment:
+      PORT: 80
+    depends_on:
+      - back-end
+    ports:
+      - "80:80"
+
+volumes:
+  postgres:
